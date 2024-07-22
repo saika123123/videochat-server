@@ -8,6 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ログミドルウェアを追加
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Sequelize setup
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
   host: process.env.DB_HOST,
@@ -38,6 +44,7 @@ app.post('/api/meetings', async (req, res) => {
     const meeting = await Meeting.create(req.body);
     res.status(201).json(meeting);
   } catch (error) {
+    console.error('Error creating meeting:', error);
     res.status(500).json({ error: 'Error creating meeting' });
   }
 });
@@ -47,17 +54,10 @@ app.get('/api/meetings', async (req, res) => {
     const meetings = await Meeting.findAll();
     res.json(meetings);
   } catch (error) {
+    console.error('Error fetching meetings:', error);
     res.status(500).json({ error: 'Error fetching meetings' });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-const cors = require('cors');
-app.use(cors());
-
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
-  });
